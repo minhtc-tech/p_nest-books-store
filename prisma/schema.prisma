@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tag {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  books Book[] @relation("BookToTag")
+
+  @@map("tags")
+}
+
+model Book {
+  id         Int         @id @default(autoincrement())
+  title      String      @unique @db.VarChar(200)
+  writer     String      @db.VarChar(200)
+  coverImage String      @default("https://images-na.ssl-images-amazon.com/images/I/51Ga5GuElyL._AC_SX184_.jpg")
+  point      Int
+  quantity   Int
+  CartItem   CartItem[]
+  OrderItem  OrderItem[]
+  tags       Tag[]       @relation("BookToTag")
+
+  @@map("books")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  name         String?  @db.VarChar(200)
+  email        String   @unique
+  passwordHash String
+  point        Int      @default(100)
+  cart         Cart?
+  orders       Order[]
+
+  @@map("users")
+}
+
+model CartItem {
+  quantity Int
+  cartId   Int
+  bookId   Int
+  book     Book @relation(fields: [bookId], references: [id])
+  cart     Cart @relation(fields: [cartId], references: [userId])
+
+  @@id([bookId, cartId])
+}
+
+model Cart {
+  userId Int        @id
+  items  CartItem[]
+  user   User       @relation(fields: [userId], references: [id])
+
+  @@map("carts")
+}
+
+model OrderItem {
+  quantity   Int
+  orderPoint Int
+  orderId    Int
+  bookId     Int
+  book       Book  @relation(fields: [bookId], references: [id])
+  order      Order @relation(fields: [orderId], references: [id])
+
+  @@id([bookId, orderId])
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  address   String
+  phone     String
+  note      String?
+  status    OrderStatus @default(PENDING)
+  userId    Int
+  items     OrderItem[]
+  user      User        @relation(fields: [userId], references: [id])
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  DELIVERING
+  COMPLETED
+  CANCELLED
+}

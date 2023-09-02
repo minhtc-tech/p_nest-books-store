@@ -1,0 +1,7 @@
+{
+  "editor.formatOnSave": true,
+  "cSpell.words": ["datasources", "pactum"],
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  }
+}
